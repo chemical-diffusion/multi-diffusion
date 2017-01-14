@@ -102,17 +102,18 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
         for i in range(n_comps):
             plt.plot(x_points, profiles[i] 
                                 - 1./(n_comps + 1) * profiles.sum(axis=0), 
-                                color=colors[i], label=labels[i])
+                                color=colors[i], label=labels[i], lw=2)
             if exp_norm_profiles is not None:
                 plt.plot(x_points, 
                         exp_norm_profiles[i], 'o', color=colors[i])
 
         plt.plot(x_points, -1./(n_comps + 1) * profiles.sum(axis=0), 
-                    color=colors[-1], label=labels[-1])
+                    color=colors[-1], label=labels[-1], lw=2)
         if exp_norm_profiles is not None:
             plt.plot(x_points, exp_norm_profiles[-1], 'o', color=colors[-1])
-
-        #plt.legend(loc='best')
+        plt.ylabel('concentrations', fontsize=20)
+        plt.xlabel(u'$x/\sqrt{t}$', fontsize=24)
+        plt.tight_layout()
         plt.show()
     error = (profiles - (exp_norm_profiles[:-1] - exp_norm_profiles[-1]))
     #error[0] *= 5
