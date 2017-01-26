@@ -79,11 +79,14 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
     dc_init : array
         concentration delta between endmembers (for the n species)
     exp_norm_profiles : array
-        experimental profiles, to be compared with theoretical ones. The mean of        the profile should be zero (ie, call ``normalize_profiles``).
+        experimental profiles, to be compared with theoretical ones.
+        The mean of the profile should be zero (ie,
+        call ``normalize_profiles``).
 
     Returns
     -------
     """
+    do_legend = True
     diag, P = diff_matrix
     P = np.matrix(P)
     dc = dc_init[:-1] - dc_init[-1]
@@ -95,9 +98,10 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
     profiles = P * np.matrix(profs)
     if plot:
         if labels is None:
+            do_legend = False
             labels = [str(ind) for ind in range(n_comps + 1)]
         plt.figure()
-        colors = ['r', 'c', 'm', 'y']
+        colors = ['r', 'c', 'm', 'y', 'k', 'g']
         profiles = np.array(profiles)
         for i in range(n_comps):
             plt.plot(x_points, profiles[i] 
@@ -108,15 +112,16 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
                         exp_norm_profiles[i], 'o', color=colors[i])
 
         plt.plot(x_points, -1./(n_comps + 1) * profiles.sum(axis=0), 
-                    color=colors[-1], label=labels[-1], lw=2)
+                    color=colors[i + 1], label=labels[i + 1], lw=2)
         if exp_norm_profiles is not None:
-            plt.plot(x_points, exp_norm_profiles[-1], 'o', color=colors[-1])
+            plt.plot(x_points, exp_norm_profiles[-1], 'o', color=colors[i + 1])
         plt.ylabel('concentrations', fontsize=20)
         plt.xlabel(u'$x/\sqrt{t}$', fontsize=24)
+        if do_legend:
+            plt.legend(loc='best')
         plt.tight_layout()
         plt.show()
     error = (profiles - (exp_norm_profiles[:-1] - exp_norm_profiles[-1]))
-    #error[0] *= 5
     if return_data:
         return profiles - 1./(n_comps + 1) * profiles.sum(axis=0), exp_norm_profiles
     else:
@@ -207,7 +212,7 @@ def optimize_profile(diff_matrix, x_points, dc_init, exp_norm_profiles,
             prof_corr = np.copy(exp_norm_profiles[i])
             prof_corr[:-1] -= shifts[0, i][:, None]
             _ = evolve_profile((diags, eigvecs), x_points[i], dc_corr,
-                    exp_norm_profiles=prof_corr, labels=labels)    
+                    exp_norm_profiles=prof_corr, labels=labels) 
     return diags, eigvecs, shifts
 
 
@@ -373,7 +378,7 @@ def optimize_profile_noshifts(diff_matrix, x_points, dc_init,
     return diags, eigvecs
 
 def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
-                                eigvals_only=False):
+                                eigvals_only=False, labels=None):
     """
     Compute a best fit for the diffusion matrix, given a set of experimental
     concentration profiles.
@@ -420,7 +425,8 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
     else:
         diags, eigvecs, shifts = optimize_profile(diff_matrix, x_points, dc,
                                               normalized_profiles,
-                                              display_result=plot)
+                                              display_result=plot,
+                                              labels=labels)
     fitted_profiles = []
     norm_profiles = []
     for i in range(len(dc)):
