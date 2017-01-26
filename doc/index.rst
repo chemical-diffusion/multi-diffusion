@@ -1,22 +1,21 @@
-.. multidiff documentation master file, created by
-   sphinx-quickstart on Thu Jan  5 15:11:19 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 Welcome to multidiff's documentation!
 =====================================
 
-Contents:
+multidiff is a Python package for analyzing diffusion data in coupled
+systems.
+
+.. image:: auto_examples/images/sphx_glr_plot_diffusion_matrix_001.png
+   :target: auto_examples/plot_diffusion_matrix.html
+   :align: center
+   :width: 40%
+
 
 .. toctree::
    :maxdepth: 2
 
+   install
+   auto_examples/index
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 

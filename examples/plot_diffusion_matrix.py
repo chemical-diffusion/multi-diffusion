@@ -58,7 +58,8 @@ diags_init = np.array([1, 1])
 P_init = np.eye(2)
 diags_res, eigvecs, _, _, _ = compute_diffusion_matrix((diags_init, P_init), 
                                x_points,
-                               concentration_profiles, plot=True)
+                               concentration_profiles, plot=True,
+                               labels=['1', '2', '3'])
 
 print("True eigenvalues: ", diags)
 

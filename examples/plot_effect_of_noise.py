@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from multidiff import compute_diffusion_matrix, create_diffusion_profiles
 
 ############################################################################
-# Our diffusion system has three components (e.g. three oxides). The diffusion
+# Our diffusion system has three components (e.g. oxides). The diffusion
 # matrix has two eigenvalues with quite different magnitudes. Exchange vectors
 # correspond to the exchange of the three possible pairs of components
 # (meaning that each endmember is enriched in one component and poorer in
@@ -50,16 +50,23 @@ P_init = np.matrix([[1.5, 0.9], [-1, -0.7]])
 # the system, plus a large number of measurement points.
 
 noises = np.arange(0, 0.2, 0.02)
-errors = np.empty((len(noises), 2))
+n_real = 50
+errors = np.empty((len(noises), n_real, 2))
+
 
 for i, noise in enumerate(noises):
-    concentration_profiles = create_diffusion_profiles((diags, P), x_points,
-                                    exchange_vectors, noise_level=noise)
-    diags_res, eigvecs, _, _, _ = (
+    for j in range(n_real):
+        concentration_profiles = create_diffusion_profiles((diags, P), 
+                                    x_points,
+                                    exchange_vectors, noise_level=noise,
+                                    seed=i * n_real + j)
+        diags_res, eigvecs, _, _, _ = (
             compute_diffusion_matrix((diags_init, P_init), x_points,
                                         concentration_profiles, plot=False))
-    errors[i, :] = np.abs(np.sort(diags_res) - diags) / diags
+        errors[i, j, :] = ((np.sort(diags_res) - diags) / diags)**2.
 
+
+errors = np.sqrt(errors.mean(axis=1))
 
 plt.figure()
 plt.plot(noises, errors[:, 0], 'co--',

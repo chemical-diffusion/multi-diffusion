@@ -16,6 +16,9 @@
 import sys
 import os
 
+curpath = os.path.dirname(__file__)
+sys.path.append(os.path.join(curpath, 'ext'))
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -269,4 +272,10 @@ sphinx_gallery_conf = {
     # path to your examples scripts
     'examples_dirs' : '../examples',
     # path where to save gallery generated examples
-    'gallery_dirs'  : 'auto_examples'}
+    'gallery_dirs'  : 'auto_examples',
+    'mod_example_dir': 'modules',
+    'reference_url'     : {
+            'multidiff': None,
+            'matplotlib': 'http://matplotlib.org',
+            'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
+            'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',}}
