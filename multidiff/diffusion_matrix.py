@@ -151,6 +151,7 @@ def evolve_profile_nonorm(diff_matrix, x_points, dc_init,
         plt.show()
     return profiles
 
+
 def optimize_profile(diff_matrix, x_points, dc_init, exp_norm_profiles,
                      display_result=True, labels=None):
     """
@@ -201,7 +202,7 @@ def optimize_profile(diff_matrix, x_points, dc_init, exp_norm_profiles,
                              np.zeros(2 * n_exp * n_comp)))
     res = optimize.leastsq(cost_function, coeffs,
                            args=(x_points, dc_init, exp_norm_profiles),
-                           ftol=1.e-15, full_output=True, factor=10)[0]
+                           full_output=True, factor=10)[0]
     diags, eigvecs, shifts =  res[:n_comp], \
            res[n_comp: n_comp + n_comp**2].reshape((n_comp, n_comp)), \
            res[n_comp + n_comp**2:].reshape((2, n_exp, n_comp))
@@ -274,17 +275,15 @@ def optimize_eigvals(diff_matrix, x_points, dc_init, exp_norm_profiles,
             prof_corr = np.copy(exp_norm_profiles[i])
             prof_corr[:-1] -= shifts[0, i][:, None]
             _ = evolve_profile((diags, P), x_points[i], dc_corr,
-                    exp_norm_profiles=prof_corr, labels=labels)    
+                    exp_norm_profiles=prof_corr, labels=labels) 
     return diags, shifts
 
 
 def optimize_profile_multi_temp(diff_matrix, x_points, dc_init, exp_norm_profiles):
     """
     Fit the diffusion matrix
-
     Parameters
     ----------
-
     diff_matrix : tuple
         tuple of (eigenvalues, eigenvectors) in reduced basis (dim n-1)
     x_points : 1-D array_like
@@ -325,57 +324,29 @@ def optimize_profile_multi_temp(diff_matrix, x_points, dc_init, exp_norm_profile
     return diags, eigvecs
 
 
-def optimize_profile_noshifts(diff_matrix, x_points, dc_init,
-                              exp_norm_profiles,
-                              display_result=True, labels=None):
-    """
-    Fit the diffusion matrix
-
-    Parameters
-    ----------
-
-    diff_matrix : tuple
-        tuple of (eigenvalues, eigenvectors) in reduced basis (dim n-1)
-    x_points : 1-D array_like
-        spatial coordinates
-    dc_init : array
-        concentration difference between endmembers
-    exp_norm_profiles : list of arrays
-        profiles to be fitted, of length the nb of experiments, with n
-        profiles for each experiment. Profiles are normalized, that is, an
-        estimation of the estimated mean concentration should be substracted.
-    """
-    n_comp = len(dc_init[0]) - 1
-    n_exp = len(x_points)
-
-    def cost_function(coeffs, x_points, dc_init, exp_norm_profiles):
-        n_comp = len(dc_init[0]) - 1
-        diag = coeffs[:n_comp]
-        n_exp = len(x_points)
-        P = np.matrix(coeffs[n_comp: n_comp + n_comp**2].reshape((n_comp,
-                                                                  n_comp)))
-        errors = np.array([])
-        for i in range(n_exp):
-            dc_corr = np.copy(dc_init[i])
-            profile_corr = np.copy(exp_norm_profiles[i])
-            error = evolve_profile((diag, P), x_points[i], dc_corr, profile_corr, plot=False)
-            errors = np.concatenate((errors, error))
-        return errors
-
+def evolve_profile_nonorm(diff_matrix, x_points, dc_init,
+                    exp_norm_profiles=None, plot=True, return_data=False):
     diag, P = diff_matrix
-    coeffs = np.concatenate((diag, np.array(P).ravel()))
-    res = optimize.leastsq(cost_function, coeffs,
-                           args=(x_points, dc_init, exp_norm_profiles),
-                           ftol=1.e-15, full_output=True, factor=10)[0]
-    diags, eigvecs =  res[:n_comp], \
-           res[n_comp: n_comp + n_comp**2].reshape((n_comp, n_comp))
-    if display_result:
-       for i in range(n_exp):
-            dc_corr = np.copy(dc_init[i])
-            prof_corr = np.copy(exp_norm_profiles[i])
-            _ = evolve_profile((diags, eigvecs), x_points[i], dc_corr,
-                    exp_norm_profiles=prof_corr, labels=labels)
-    return diags, eigvecs
+    P = np.matrix(P)
+    orig = P.I * dc_init[:, None] / 2.
+    n_comps = len(diag)
+    profs = np.empty((n_comps, len(x_points)))
+    for i in range(n_comps):
+        profs[i] = orig[i] * erf(x_points / np.sqrt(4 * diag[i]))
+    profiles = P * np.matrix(profs)
+    if plot:
+        plt.figure()
+        colors = ['r', 'c', 'm', 'y']
+        profiles = np.array(profiles)
+        for i in range(n_comps):
+            plt.plot(x_points, profiles[i], color=colors[i])
+            if exp_norm_profiles is not None:
+                plt.plot(x_points, exp_norm_profiles[i], 'o', color=colors[i],
+                            label=str(i))
+        plt.legend()
+        plt.show()
+    return profiles
+
 
 def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
                                 eigvals_only=False, labels=None):
@@ -429,6 +400,7 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
                                               labels=labels)
     fitted_profiles = []
     norm_profiles = []
+    # Post-processing
     for i in range(len(dc)):
         dc_corr = np.copy(dc[i])
         dc_corr[:-1] -= shifts[1, i]
@@ -439,6 +411,7 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
                                 return_data=True, plot=False)
         fitted_profiles.append(output[0])
         norm_profiles.append(output[1])
+    print(eigvecs)
     eigvecs = eigvecs_to_fulloxides(eigvecs)
     return diags, eigvecs, norm_profiles, fitted_profiles, shifts
 
