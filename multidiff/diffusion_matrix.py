@@ -58,6 +58,7 @@ def preprocessing(profiles):
 # ------------------ Diffusion matrix -----------------------------------
 
 def _best_number_subplots(i):
+    # not used at the moment; test??
     subplots_number = {3:(1, 3), 4:(2, 2), 5:(2, 3), 6:(2,3), 7:(3, 3),
                        8:(3, 3)}
     return subplots_number[i]
@@ -89,7 +90,7 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
     do_legend = True
     diag, P = diff_matrix
     P = np.matrix(P)
-    dc = dc_init[:-1] - dc_init[-1]
+    dc = dc_init[:-1] #TODO
     orig = P.I * dc[:, None] / 2.
     n_comps = len(diag)
     profs = np.empty((n_comps, len(x_points)))
@@ -104,14 +105,13 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
         colors = ['r', 'c', 'm', 'y', 'k', 'g']
         profiles = np.array(profiles)
         for i in range(n_comps):
-            plt.plot(x_points, profiles[i] 
-                                - 1./(n_comps + 1) * profiles.sum(axis=0), 
+            plt.plot(x_points, profiles[i], 
                                 color=colors[i], label=labels[i], lw=2)
             if exp_norm_profiles is not None:
                 plt.plot(x_points, 
                         exp_norm_profiles[i], 'o', color=colors[i])
 
-        plt.plot(x_points, -1./(n_comps + 1) * profiles.sum(axis=0), 
+        plt.plot(x_points, -profiles.sum(axis=0),
                     color=colors[i + 1], label=labels[i + 1], lw=2)
         if exp_norm_profiles is not None:
             plt.plot(x_points, exp_norm_profiles[-1], 'o', color=colors[i + 1])
@@ -121,35 +121,11 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
             plt.legend(loc='best')
         plt.tight_layout()
         plt.show()
-    error = (profiles - (exp_norm_profiles[:-1] - exp_norm_profiles[-1]))
+    error = (profiles - (exp_norm_profiles[:-1]))
     if return_data:
-        return profiles - 1./(n_comps + 1) * profiles.sum(axis=0), exp_norm_profiles
+        return profiles, exp_norm_profiles
     else:
         return np.ravel(error)
-
-
-def evolve_profile_nonorm(diff_matrix, x_points, dc_init,
-                    exp_norm_profiles=None, plot=True, return_data=False):
-    diag, P = diff_matrix
-    P = np.matrix(P)
-    orig = P.I * dc_init[:, None] / 2.
-    n_comps = len(diag)
-    profs = np.empty((n_comps, len(x_points)))
-    for i in range(n_comps):
-        profs[i] = orig[i] * erf(x_points / np.sqrt(4 * diag[i]))
-    profiles = P * np.matrix(profs)
-    if plot:
-        plt.figure()
-        colors = ['r', 'c', 'm', 'y']
-        profiles = np.array(profiles)
-        for i in range(n_comps):
-            plt.plot(x_points, profiles[i], color=colors[i])
-            if exp_norm_profiles is not None:
-                plt.plot(x_points, exp_norm_profiles[i], 'o', color=colors[i],
-                            label=str(i))
-        plt.legend()
-        plt.show()
-    return profiles
 
 
 def optimize_profile(diff_matrix, x_points, dc_init, exp_norm_profiles,
@@ -324,30 +300,6 @@ def optimize_profile_multi_temp(diff_matrix, x_points, dc_init, exp_norm_profile
     return diags, eigvecs
 
 
-def evolve_profile_nonorm(diff_matrix, x_points, dc_init,
-                    exp_norm_profiles=None, plot=True, return_data=False):
-    diag, P = diff_matrix
-    P = np.matrix(P)
-    orig = P.I * dc_init[:, None] / 2.
-    n_comps = len(diag)
-    profs = np.empty((n_comps, len(x_points)))
-    for i in range(n_comps):
-        profs[i] = orig[i] * erf(x_points / np.sqrt(4 * diag[i]))
-    profiles = P * np.matrix(profs)
-    if plot:
-        plt.figure()
-        colors = ['r', 'c', 'm', 'y']
-        profiles = np.array(profiles)
-        for i in range(n_comps):
-            plt.plot(x_points, profiles[i], color=colors[i])
-            if exp_norm_profiles is not None:
-                plt.plot(x_points, exp_norm_profiles[i], 'o', color=colors[i],
-                            label=str(i))
-        plt.legend()
-        plt.show()
-    return profiles
-
-
 def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
                                 eigvals_only=False, labels=None):
     """
@@ -411,14 +363,18 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
                                 return_data=True, plot=False)
         fitted_profiles.append(output[0])
         norm_profiles.append(output[1])
-    print(eigvecs)
     eigvecs = eigvecs_to_fulloxides(eigvecs)
     return diags, eigvecs, norm_profiles, fitted_profiles, shifts
 
 # ------------------ Post-processing ----------------------------------------
 
-
 def eigvecs_to_fulloxides(eigvecs):
+    all_eigvec = np.vstack((eigvecs, -eigvecs.sum(axis=0)))
+    return all_eigvec / np.max(np.abs(all_eigvec), axis=0)
+
+
+def eigvecs_to_fulloxides_other_mode(eigvecs):
+    # no test
     n = len(eigvecs)
     dc_dependent = -1. / (n + 1) * eigvecs.sum(axis=0)
     all_eigvec = np.vstack((eigvecs + dc_dependent,  dc_dependent))

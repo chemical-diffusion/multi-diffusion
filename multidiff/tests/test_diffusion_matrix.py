@@ -2,6 +2,10 @@ import numpy as np
 from multidiff import compute_diffusion_matrix, create_diffusion_profiles
 
 
+def colinearity_coefficient(x, y):
+    return np.dot(x, y) / np.sqrt((x**2).sum() * (y**2).sum())
+
+
 def test_input_matrix():
     x_prof = np.linspace(-20, 20, 100)
     x_points = [x_prof, x_prof, x_prof]
@@ -28,7 +32,13 @@ def test_input_matrix():
     diags_res, eigvecs, _, _, _ = compute_diffusion_matrix((diags_init, P_init),
                                            x_points, concentration_profiles,
                                            plot=False)
-    assert np.allclose(np.sort(diags), np.sort(diags_res), rtol=0.06)
+    order_init = np.argsort(diags)
+    order_res = np.argsort(diags_res)
+    assert np.allclose(diags[order_init], diags_res[order_res], rtol=0.06)
+    assert abs(colinearity_coefficient(eigvecs[:-1, order_res][:, 0],
+                          np.ravel(P[:, 0]))) > 0.95 
+    assert abs(colinearity_coefficient(eigvecs[:-1, order_res][:, 1],
+                         np.ravel(P[:, 1]))) > 0.95
 
 
 def test_eigvals_only():
@@ -46,7 +56,7 @@ def test_eigvals_only():
     diags_res, eigvecs, _, _, _ = compute_diffusion_matrix((diags_init,
                                                             P),
                                            x_points, concentration_profiles,
-                                           plot=True, eigvals_only=True)
+                                           plot=False, eigvals_only=True)
     #assert np.allclose(np.sort(diags), np.sort(diags_res), rtol=1.e-5)
     print(diags_res)
 
