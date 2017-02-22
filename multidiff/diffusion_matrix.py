@@ -156,7 +156,6 @@ def optimize_profile(diff_matrix, x_points, dc_init, exp_norm_profiles,
         profiles to be fitted, of length the nb of experiments, with n
         profiles for each experiment. Profiles are normalized, that is, an
         estimation of the estimated mean concentration should be substracted.
-        
     """
     n_comp = len(dc_init[0]) - 1
     n_exp = len(x_points)
@@ -393,12 +392,4 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
 
 def eigvecs_to_fulloxides(eigvecs):
     all_eigvec = np.vstack((eigvecs, -eigvecs.sum(axis=0)))
-    return all_eigvec / np.max(np.abs(all_eigvec), axis=0)
-
-
-def eigvecs_to_fulloxides_other_mode(eigvecs):
-    # no test
-    n = len(eigvecs)
-    dc_dependent = -1. / (n + 1) * eigvecs.sum(axis=0)
-    all_eigvec = np.vstack((eigvecs + dc_dependent,  dc_dependent))
     return all_eigvec / np.max(np.abs(all_eigvec), axis=0)
