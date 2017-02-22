@@ -27,7 +27,7 @@ def _normalize_profiles(profiles, c_mean):
     return normalized_profiles
 
 
-def preprocessing(profiles):
+def preprocessing(profiles, nb_temp=1):
     """
     Parameters
     ----------
@@ -50,8 +50,18 @@ def preprocessing(profiles):
     c_mean : ndarray of shape n_exp x n_elements
         Average of concentration along each profile.
     """
-    dc, c_mean = _dc_from_profiles(profiles)
-    normalized_profiles = _normalize_profiles(profiles, c_mean)
+    if nb_temp > 1:
+        dc, c_mean, normalized_profiles = [], [], []
+        for profiles_temp in profiles:
+            dc_temp, c_mean_temp = _dc_from_profiles(profiles_temp)
+            normalized_profiles_temp = _normalize_profiles(profiles_temp,
+                                                           c_mean_temp)
+            dc.append(dc_temp)
+            c_mean.append(c_mean_temp)
+            normalized_profiles.append(normalized_profiles_temp)
+    else:
+        dc, c_mean = _dc_from_profiles(profiles)
+        normalized_profiles = _normalize_profiles(profiles, c_mean)
     return normalized_profiles, dc, c_mean
 
 
@@ -255,7 +265,8 @@ def optimize_eigvals(diff_matrix, x_points, dc_init, exp_norm_profiles,
     return diags, shifts
 
 
-def optimize_profile_multi_temp(diff_matrix, x_points, dc_init, exp_norm_profiles):
+def optimize_profile_multi_temp(diff_matrix, x_points, dc_init,
+                exp_norm_profiles, display_result=True, labels=None):
     """
     Fit the diffusion matrix
     Parameters
@@ -295,13 +306,18 @@ def optimize_profile_multi_temp(diff_matrix, x_points, dc_init, exp_norm_profile
     res = optimize.leastsq(cost_function, coeffs,
                            args=(x_points, dc_init, exp_norm_profiles),
                            ftol=1.e-15, full_output=True, factor=10)[0]
-    diags, eigvecs =  res[:n_eigvals], \
+    diags, eigvecs =  res[:n_eigvals].reshape((n_temp, n_comp)), \
            res[n_eigvals: n_eigvals + n_comp**2].reshape((n_comp, n_comp))
+    if display_result:
+        for i in range(n_temp):
+            for j in range(n_exp[i]):
+                _ = evolve_profile((diags[i], eigvecs), x_points[i][j], dc_init[i][j],
+                    exp_norm_profiles=exp_norm_profiles[i][j], labels=labels) 
     return diags, eigvecs
 
 
 def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
-                                eigvals_only=False, labels=None):
+                                eigvals_only=False, labels=None, nb_temp=1):
     """
     Compute a best fit for the diffusion matrix, given a set of experimental
     concentration profiles.
@@ -339,12 +355,19 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
         small corrections to concentration mean and difference computed by the
         optimization algorithm
     """
-    normalized_profiles, dc, c_mean = preprocessing(profiles)
+    normalized_profiles, dc, c_mean = preprocessing(profiles, nb_temp=nb_temp)
     if eigvals_only:
         diags, shifts = optimize_eigvals(diff_matrix, x_points, dc,
                                               normalized_profiles,
                                               display_result=plot)
         eigvecs = diff_matrix[1]
+    if nb_temp > 1:
+        diags, eigvecs = optimize_profile_multi_temp(diff_matrix, x_points, dc,
+                                              normalized_profiles,
+                                              display_result=plot,
+                                              labels=labels)
+        eigvecs = eigvecs_to_fulloxides(eigvecs)
+        return diags, eigvecs, normalized_profiles
     else:
         diags, eigvecs, shifts = optimize_profile(diff_matrix, x_points, dc,
                                               normalized_profiles,
@@ -352,7 +375,7 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
                                               labels=labels)
     fitted_profiles = []
     norm_profiles = []
-    # Post-processing
+    # Post-processing, only if nb_temp = 1
     for i in range(len(dc)):
         dc_corr = np.copy(dc[i])
         dc_corr[:-1] -= shifts[1, i]
