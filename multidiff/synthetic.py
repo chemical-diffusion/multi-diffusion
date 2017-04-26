@@ -29,6 +29,7 @@ def create_diffusion_profiles(diff_matrix, x_points, exchange_vectors,
     """
     gen = np.random.RandomState(seed)
     diags, P = diff_matrix
+    P = np.matrix(P)
     exchanges = exchange_vectors[:-1]
     n_comps = exchanges.shape[0]
     if n_comps != P.shape[0]:

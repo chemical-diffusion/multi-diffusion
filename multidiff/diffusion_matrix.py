@@ -337,6 +337,8 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
     eigvals_only : bool, default False
         if True, the algorithm assumes that eigenvectors have already been
         determined, and optimizes over the eigenvalues only.
+    nb_temp : int, default 1
+        if > 1, input data have been taken at different temperatures
 
     Returns
     -------
@@ -383,10 +385,11 @@ def compute_diffusion_matrix(diff_matrix, x_points, profiles, plot=True,
         output = evolve_profile((diags, eigvecs), x_points[i], dc_corr,
                                 exp_norm_profiles=prof_corr,
                                 return_data=True, plot=False)
-        fitted_profiles.append(output[0])
+        fitted_profiles.append(np.array(output[0]))
         norm_profiles.append(output[1])
     eigvecs = eigvecs_to_fulloxides(eigvecs)
-    return diags, eigvecs, norm_profiles, fitted_profiles, shifts
+    return diags, eigvecs, norm_profiles, \
+            fitted_profiles, shifts
 
 # ------------------ Post-processing ----------------------------------------
 
