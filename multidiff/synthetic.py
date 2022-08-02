@@ -29,18 +29,17 @@ def create_diffusion_profiles(diff_matrix, x_points, exchange_vectors,
     """
     gen = np.random.RandomState(seed)
     diags, P = diff_matrix
-    P = np.matrix(P)
     exchanges = exchange_vectors[:-1]
     n_comps = exchanges.shape[0]
     if n_comps != P.shape[0]:
         raise ValueError("Exchange vectors must be given in the full basis")
     concentration_profiles = []
     for i_exp, x_prof in enumerate(x_points):
-        orig = P.I * exchanges[:, i_exp][:, None] / 2.
+        orig = np.dot(np.linalg.inv(P), exchanges[:, i_exp][:, None] / 2.)
         profs = np.empty((n_comps, len(x_prof)))
         for i in range(n_comps):
             profs[i] = orig[i] * erf(x_prof / np.sqrt(4 * diags[i]))
-        profiles = np.array(P * np.matrix(profs))
+        profiles = np.dot(P, profs)
         profiles = np.vstack((profiles, - profiles.sum(axis=0)))
         concentration_profiles.append(np.array(profiles) + 
                                 noise_level * gen.randn(*profiles.shape))

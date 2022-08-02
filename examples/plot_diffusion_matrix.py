@@ -23,7 +23,7 @@ from multidiff import compute_diffusion_matrix, create_diffusion_profiles
 n_comps = 2
 
 diags = np.array([1, 5])
-P = np.matrix([[1, 1], [-1, 0]])
+P = np.array([[1, 1], [-1, 0]])
 
 ############################################################################
 # It is possible to have different measurement points for the different

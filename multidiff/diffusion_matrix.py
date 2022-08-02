@@ -99,14 +99,13 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
     """
     do_legend = True
     diag, P = diff_matrix
-    P = np.matrix(P)
     dc = dc_init[:-1] #TODO
-    orig = P.I * dc[:, None] / 2.
+    orig = np.dot(np.linalg.inv(P), dc[:, None] / 2.)
     n_comps = len(diag)
     profs = np.empty((n_comps, len(x_points)))
     for i in range(n_comps):
         profs[i] = orig[i] * erf(x_points / np.sqrt(4 * diag[i]))
-    profiles = P * np.matrix(profs)
+    profiles = np.dot(P, profs)
     if plot:
         if labels is None:
             do_legend = False
@@ -126,7 +125,7 @@ def evolve_profile(diff_matrix, x_points, dc_init, exp_norm_profiles=None,
         if exp_norm_profiles is not None:
             plt.plot(x_points, exp_norm_profiles[-1], 'o', color=colors[i + 1])
         plt.ylabel('concentrations', fontsize=20)
-        plt.xlabel(u'$x/\sqrt{t}$', fontsize=24)
+        plt.xlabel(u'$x/\\sqrt{t}$', fontsize=24)
         if do_legend:
             plt.legend(loc='best')
         plt.tight_layout()
@@ -164,7 +163,7 @@ def optimize_profile(diff_matrix, x_points, dc_init, exp_norm_profiles,
         n_comp = len(dc_init[0]) - 1
         diag = coeffs[:n_comp]
         n_exp = len(x_points)
-        P = np.matrix(coeffs[n_comp: n_comp + n_comp**2].reshape((n_comp,
+        P = np.array(coeffs[n_comp: n_comp + n_comp**2].reshape((n_comp,
                                                                   n_comp)))
         adjust_cmeans = coeffs[n_comp + n_comp**2:
                                n_comp + n_comp**2 + 
@@ -288,7 +287,7 @@ def optimize_profile_multi_temp(diff_matrix, x_points, dc_init,
 
     def cost_function(coeffs, x_points, dc_init, exp_norm_profiles):
         diag = coeffs[:n_eigvals].reshape((n_temp, n_comp))
-        P = np.matrix(coeffs[n_eigvals: n_eigvals + n_comp**2].reshape((n_comp,
+        P = np.array(coeffs[n_eigvals: n_eigvals + n_comp**2].reshape((n_comp,
                                                                         n_comp)))
         errors = np.array([])
         for i in range(n_temp):

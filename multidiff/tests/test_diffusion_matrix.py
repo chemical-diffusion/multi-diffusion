@@ -10,7 +10,7 @@ def test_input_matrix():
     x_prof = np.linspace(-20, 20, 100)
     x_points = [x_prof, x_prof, x_prof]
     diags = np.array([1, 5])
-    P = np.matrix([[1, 1], [-1, 0]])
+    P = np.array([[1, 1], [-1, 0]])
     dc = np.array([[1, 1, 0],
                    [-1, 0, 1],
                    [0, -1, -1]])
@@ -45,14 +45,14 @@ def test_eigvals_only():
     x_prof = np.linspace(-20, 20, 100)
     x_points = [x_prof, x_prof, x_prof]
     diags = np.array([1, 5])
-    P = np.matrix([[1, 1], [-1, 0]])
+    P = np.array([[1, 1], [-1, 0]])
     dc = np.array([[1, 1, 0],
                    [-1, 0, 1],
                    [0, -1, -1]])
     concentration_profiles = create_diffusion_profiles((diags, P),
                                             x_points, dc, noise_level=0.06)
     diags_init = np.array([1, 1])
-    P_estimate = np.matrix([[1, 1], [-1.1, 0.1]])
+    P_estimate = np.array([[1, 1], [-1.1, 0.1]])
     diags_res, eigvecs, _, _, _ = compute_diffusion_matrix((diags_init,
                                                             P),
                                            x_points, concentration_profiles,
@@ -64,7 +64,7 @@ def test_multi_temp():
     n_comps = 2
     diags_T1 = np.array([1, 2])
     diags_T2 = np.array([2, 10])
-    P = np.matrix([[1, 1], [-1, 0]])
+    P = np.array([[1, 1], [-1, 0]])
     xpoints_exp = np.linspace(-15, 15, 100)
     x_points = [xpoints_exp] * 3
     exchange_vectors = np.array([[0, 1, 1], 
