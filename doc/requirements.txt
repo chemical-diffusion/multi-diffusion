@@ -3,4 +3,4 @@ scipy
 matplotlib
 sphinx-gallery
 derivative
-multidiff
+multidiff>=0.2.1
