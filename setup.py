@@ -6,7 +6,7 @@ except ImportError:
 import multidiff
 
 setup(name='multidiff',
-      version='0.2',
+      version='0.2.1',
       packages=['multidiff'],
       author='Emmanuelle Gouillart',
       author_email='emmanuelle.gouillart@gmail.com',
