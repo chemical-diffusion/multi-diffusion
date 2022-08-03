@@ -3,8 +3,6 @@ import numpy as np
 from scipy import integrate, interpolate, optimize
 from math import exp
 
-import os 
-dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def diffusion_equation(Y, t):
     y, yp = Y
@@ -12,8 +10,9 @@ def diffusion_equation(Y, t):
 
 
 def g_coeff(delta_gamma):
-    path = os.path.join(dir_path, 'g_coeffs.npy')
-    coeffs = np.load(path)
+    coeffs = np.array([-1.03803694e-08,  9.47721515e-07, -3.39810547e-05,  5.86327295e-04,
+       -4.27942295e-03, -1.01343662e-02,  5.81692838e-01, -5.62934112e-03])
+
     return np.polyval(coeffs, delta_gamma)
 
 
