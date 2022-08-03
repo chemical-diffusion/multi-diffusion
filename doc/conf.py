@@ -274,8 +274,9 @@ sphinx_gallery_conf = {
     # path where to save gallery generated examples
     'gallery_dirs'  : 'auto_examples',
     #'mod_example_dir': 'modules',
-    'reference_url'     : {
-            'multidiff': None,
-            'matplotlib': 'http://matplotlib.org',
-            'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
-            'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',}}
+    #'reference_url'     : {
+    #        'multidiff': None,
+    #        'matplotlib': 'http://matplotlib.org',
+    #        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
+    #        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',}
+    }
