@@ -17,7 +17,8 @@ setup(name='multidiff',
           "scipy",
           "matplotlib",
           "derivative",
-          "sphinx-gallery"
+          "sphinx-gallery>=0.10.1",
+          "sphinx>=1.8"
       ],
       )
 
