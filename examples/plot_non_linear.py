@@ -99,7 +99,7 @@ plt.show()
 # When a parametrization of the diffusivity is known and it is possible to compute 
 # numerically the solution of the nonlinear diffusion equation with such a parametrization,
 # it is therefore much robust to fit the parameters directly. However, the Matano method
-# has the great advantage of being completely generic.
+# has the great advantage of being completely generic. 
 
 fig, ax = plt.subplots(nrows=3, ncols=4, figsize=(12, 8))
 for i in range(12):
